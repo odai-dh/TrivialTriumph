@@ -8,10 +8,11 @@ import GameScreen from '@/components/game/GameScreen';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import TrivialTriumphLogo from '@/components/game/TrivialTriumphLogo';
+import { sampleCategories } from '@/lib/sample-categories';
 
 const initialGameState: GameState = {
   players: [{ name: 'Player 1', score: 0 }],
-  categories: Array(5).fill({ title: '', questions: [] }),
+  categories: sampleCategories.slice(0, 5).map(title => ({ title, questions: [] })),
   answeredQuestions: [],
   gamePhase: 'setup',
 };
@@ -36,7 +37,19 @@ export default function Home() {
       try {
         const savedState = localStorage.getItem('trivialTriumphState');
         if (savedState) {
-          setGameState(JSON.parse(savedState));
+          const parsedState = JSON.parse(savedState);
+          // Ensure there are always 5 categories, even if saved state has fewer
+          if (parsedState.categories.length < 5) {
+            const existingTitles = parsedState.categories.map(c => c.title);
+            const additionalCategories = sampleCategories
+              .filter(sc => !existingTitles.includes(sc))
+              .slice(0, 5 - parsedState.categories.length)
+              .map(title => ({ title, questions: [] }));
+            parsedState.categories.push(...additionalCategories);
+          }
+          setGameState(parsedState);
+        } else {
+            setGameState(initialGameState);
         }
       } catch (error) {
         console.error('Could not load game state from localStorage', error);
@@ -74,7 +87,7 @@ export default function Home() {
     if (validCategories.length === 0) {
       toast({
         title: 'No Categories',
-        description: 'Please enter at least one category title.',
+        description: 'Please select at least one category.',
         variant: 'destructive',
       });
       return;
@@ -84,6 +97,7 @@ export default function Home() {
     try {
       const generatedCategories = await Promise.all(
         validCategories.map(async (category) => {
+          if (category.questions.length > 0) return category; // Don't re-generate if questions exist
           const questions = await generateJeopardyQuestions({ category: category.title });
           const sortedQuestions = questions.sort((a, b) => a.value - b.value);
           return { title: category.title, questions: sortedQuestions };
@@ -96,9 +110,10 @@ export default function Home() {
       });
 
       updateGameState({ categories: allCategories });
+      const newlyGeneratedCount = generatedCategories.filter(c => c.questions.length > 0).length;
       toast({
         title: 'Success!',
-        description: `Generated questions for ${generatedCategories.length} categor${generatedCategories.length > 1 ? 'ies' : 'y'}.`,
+        description: `Generated questions for ${newlyGeneratedCount} categor${newlyGeneratedCount > 1 ? 'ies' : 'y'}.`,
       });
     } catch (error) {
       console.error('Failed to generate questions:', error);

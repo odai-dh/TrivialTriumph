@@ -18,7 +18,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { sampleCategories } from '@/lib/sample-categories';
 
 interface SetupScreenProps {
   players: Player[];
@@ -56,11 +64,32 @@ export default function SetupScreen({
 
   const handleCategoryChange = (index: number, value: string) => {
     const newCategories = [...categories];
-    newCategories[index] = { ...newCategories[index], title: value };
+    const oldCategory = newCategories[index];
+  
+    // Find a category that is not currently selected
+    const getAvailableCategory = () => {
+      let newCategoryTitle = value;
+      let i = 0;
+      while (newCategories.some((c, idx) => idx !== index && c.title === newCategoryTitle)) {
+        newCategoryTitle = sampleCategories[ (sampleCategories.indexOf(value) + i + 1) % sampleCategories.length];
+        i++;
+      }
+      return newCategoryTitle;
+    };
+  
+    if (newCategories.some((c, idx) => idx !== index && c.title === value)) {
+        // If the selected category is already in use, try to find a replacement
+        const replacement = getAvailableCategory();
+        newCategories[index] = { ...newCategories[index], title: replacement };
+    } else {
+        newCategories[index] = { ...newCategories[index], title: value };
+    }
+
     onCategoriesChange(newCategories);
   };
   
   const hasQuestions = categories.some(c => c.questions.length > 0);
+  const usedCategories = categories.map(c => c.title);
 
   return (
     <div className="container mx-auto max-w-4xl space-y-8">
@@ -125,18 +154,30 @@ export default function SetupScreen({
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Enter up to 5 category titles.
+              Choose up to 5 categories.
             </p>
             {categories.map((category, index) => (
               <div key={index}>
                 <Label htmlFor={`category-${index}`} className="sr-only">Category {index + 1}</Label>
-                <Input
-                  id={`category-${index}`}
-                  type="text"
+                <Select
                   value={category.title}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleCategoryChange(index, e.target.value)}
-                  placeholder={`Category ${index + 1}`}
-                />
+                  onValueChange={(value) => handleCategoryChange(index, value)}
+                >
+                  <SelectTrigger id={`category-${index}`}>
+                    <SelectValue placeholder={`Category ${index + 1}`} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sampleCategories.map((sampleCat) => (
+                      <SelectItem 
+                        key={sampleCat} 
+                        value={sampleCat}
+                        disabled={usedCategories.includes(sampleCat) && category.title !== sampleCat}
+                      >
+                        {sampleCat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             ))}
           </CardContent>
