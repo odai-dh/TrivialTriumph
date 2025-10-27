@@ -22,5 +22,6 @@ export const sampleCategories = [
   "FAMOUS INVENTIONS",
   "NATURE'S WONDERS",
   "CLASSIC TV",
-  "MODERN ART"
+  "MODERN ART",
+  "FRIENDS TV SHOW"
 ];

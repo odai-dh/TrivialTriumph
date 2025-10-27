@@ -5,6 +5,6 @@ export const ai = genkit({
   plugins: [
     googleAI(),
   ],
-  logLevel: 'debug',
-  model: 'googleai/gemini-2.5-flash',
+  logLevel: 'error', // Change from 'debug' to 'error' to reduce console spam
+  model: 'googleai/gemini-2.0-flash-exp', // Free tier, fast, efficient
 });
