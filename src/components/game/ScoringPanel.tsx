@@ -1,18 +1,17 @@
 'use client';
 
-import { Player, ActiveQuestion } from '@/lib/types';
+import { Player } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Plus, Minus } from 'lucide-react';
 
 interface ScoringPanelProps {
   players: Player[];
-  activeQuestion: ActiveQuestion | null;
+  questionValue: number;
   onScoreUpdate: (playerIndex: number, amount: number) => void;
 }
 
-export default function ScoringPanel({ players, activeQuestion, onScoreUpdate }: ScoringPanelProps) {
-  const questionValue = activeQuestion?.value ?? 0;
+export default function ScoringPanel({ players, questionValue, onScoreUpdate }: ScoringPanelProps) {
 
   return (
     <Card className="shadow-lg">
@@ -35,7 +34,7 @@ export default function ScoringPanel({ players, activeQuestion, onScoreUpdate }:
                     variant="outline"
                     className="h-7 w-7 bg-green-100 hover:bg-green-200 text-green-700 border-green-300"
                     onClick={() => onScoreUpdate(index, questionValue)}
-                    disabled={!activeQuestion}
+                    disabled={questionValue === 0}
                     aria-label={`Add ${questionValue} points to ${player.name}`}
                   >
                     <Plus className="h-4 w-4" />
@@ -45,7 +44,7 @@ export default function ScoringPanel({ players, activeQuestion, onScoreUpdate }:
                     variant="outline"
                     className="h-7 w-7 bg-red-100 hover:bg-red-200 text-red-700 border-red-300"
                     onClick={() => onScoreUpdate(index, -questionValue)}
-                    disabled={!activeQuestion}
+                    disabled={questionValue === 0}
                     aria-label={`Subtract ${questionValue} points from ${player.name}`}
                   >
                     <Minus className="h-4 w-4" />

@@ -25,6 +25,7 @@ interface GameScreenProps {
   categories: Category[];
   answeredQuestions: string[];
   activeQuestion: ActiveQuestion | null;
+  lastQuestionValue: number | null;
   pointValues: number[];
   onQuestionSelect: (catIndex: number, qIndex: number) => void;
   onCloseQuestion: () => void;
@@ -37,6 +38,7 @@ export default function GameScreen({
   categories,
   answeredQuestions,
   activeQuestion,
+  lastQuestionValue,
   pointValues,
   onQuestionSelect,
   onCloseQuestion,
@@ -77,7 +79,7 @@ export default function GameScreen({
         />
         <ScoringPanel
           players={players}
-          activeQuestion={activeQuestion}
+          questionValue={activeQuestion?.value ?? lastQuestionValue ?? 0}
           onScoreUpdate={onScoreUpdate}
         />
       </div>

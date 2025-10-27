@@ -35,7 +35,7 @@ const generateJeopardyQuestionsPrompt = ai.definePrompt({
   name: 'generateJeopardyQuestionsPrompt',
   input: {schema: GenerateJeopardyQuestionsInputSchema},
   output: {schema: GenerateJeopardyQuestionsOutputSchema},
-  prompt: `Generate 5 Jeopardy-style trivia questions with answers for the category '{{category}}'. Include difficulty levels increasing from 100 to 500 points.`,
+  prompt: `Generate 5 trivia questions with answers for the category '{{category}}'. The questions should be in a style similar to the game show Jeopardy!, but easy enough for a casual party game. Include difficulty levels increasing from 100 to 500 points.`,
 });
 
 const generateJeopardyQuestionsFlow = ai.defineFlow(

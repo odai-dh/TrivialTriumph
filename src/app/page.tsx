@@ -25,6 +25,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeQuestion, setActiveQuestion] = useState<ActiveQuestion | null>(null);
+  const [lastQuestionValue, setLastQuestionValue] = useState<number | null>(null);
+
 
   const { toast } = useToast();
 
@@ -143,6 +145,7 @@ export default function Home() {
     const question = gameState.categories[catIndex]?.questions?.[qIndex];
     if (question) {
       setActiveQuestion({ ...question, categoryTitle: gameState.categories[catIndex].title });
+      setLastQuestionValue(question.value);
     }
   };
 
@@ -168,6 +171,7 @@ export default function Home() {
     }
     setGameState(initialGameState);
     setActiveQuestion(null);
+    setLastQuestionValue(null);
     toast({
         title: 'Game Reset',
         description: 'A new game has been started.',
@@ -205,6 +209,7 @@ export default function Home() {
           categories={gameState.categories}
           answeredQuestions={gameState.answeredQuestions}
           activeQuestion={activeQuestion}
+          lastQuestionValue={lastQuestionValue}
           pointValues={pointValues}
           onQuestionSelect={handleQuestionSelect}
           onCloseQuestion={handleCloseQuestion}
