@@ -1,7 +1,7 @@
 'use server';
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {HfInference} from '@huggingface/inference';
+import {z} from 'zod';
 
 const GenerateJeopardyQuestionsInputSchema = z.object({
   category: z.string().describe('The category for which to generate questions.'),
@@ -17,18 +17,13 @@ const GenerateJeopardyQuestionsOutputSchema = z.array(
 ).length(5);
 export type GenerateJeopardyQuestionsOutput = z.infer<typeof GenerateJeopardyQuestionsOutputSchema>;
 
+// Initialize Hugging Face client with API key from environment
+const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
+
 export async function generateJeopardyQuestions(
   input: GenerateJeopardyQuestionsInput
 ): Promise<GenerateJeopardyQuestionsOutput> {
-  return generateJeopardyQuestionsFlow(input);
-}
-
-const generateJeopardyQuestionsPrompt = ai.definePrompt({
-  name: 'generateJeopardyQuestionsPrompt',
-  input: {schema: GenerateJeopardyQuestionsInputSchema},
-  output: {schema: GenerateJeopardyQuestionsOutputSchema},
-  // Shorter, more direct prompt to save tokens
-  prompt: `Generate 5 Jeopardy! trivia questions for category: {{category}}
+  const prompt = `Generate 5 Jeopardy! trivia questions for category: ${input.category}
 
 Rules:
 - Questions are statements, not questions (Jeopardy! format)
@@ -38,24 +33,48 @@ Rules:
 
 Example:
 Q(100): "This closest star to Earth provides light and heat"
-A: "The Sun"`,
-});
+A: "The Sun"
 
-const generateJeopardyQuestionsFlow = ai.defineFlow(
-  {
-    name: 'generateJeopardyQuestionsFlow',
-    inputSchema: GenerateJeopardyQuestionsInputSchema,
-    outputSchema: GenerateJeopardyQuestionsOutputSchema,
-  },
-  async input => {
-    const {output} = await generateJeopardyQuestionsPrompt(input);
+Return ONLY valid JSON array with this exact structure:
+[
+  {"question": "...", "answer": "...", "value": 100},
+  {"question": "...", "answer": "...", "value": 200},
+  {"question": "...", "answer": "...", "value": 300},
+  {"question": "...", "answer": "...", "value": 400},
+  {"question": "...", "answer": "...", "value": 500}
+]`;
+
+  try {
+    // Use Qwen2.5-72B-Instruct - powerful free model
+    const response = await hf.chatCompletion({
+      model: 'Qwen/Qwen2.5-72B-Instruct',
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      max_tokens: 1000,
+      temperature: 0.7,
+    });
+
+    const content = response.choices[0]?.message?.content || '';
     
-    if (!output || output.length !== 5) {
-      throw new Error('Invalid output from AI');
+    // Extract JSON from response (handle markdown code blocks)
+    let jsonStr = content.trim();
+    if (jsonStr.includes('```json')) {
+      jsonStr = jsonStr.split('```json')[1].split('```')[0].trim();
+    } else if (jsonStr.includes('```')) {
+      jsonStr = jsonStr.split('```')[1].split('```')[0].trim();
     }
     
-    // Simple validation: ensure we have all point values
-    const values = output.map(q => q.value).sort();
+    const output = JSON.parse(jsonStr);
+    
+    // Validate output
+    const validated = GenerateJeopardyQuestionsOutputSchema.parse(output);
+    
+    // Ensure we have all point values
+    const values = validated.map(q => q.value).sort();
     const expected = [100, 200, 300, 400, 500];
     const hasAllValues = expected.every((v, i) => values[i] === v);
     
@@ -63,6 +82,9 @@ const generateJeopardyQuestionsFlow = ai.defineFlow(
       throw new Error('Missing required point values');
     }
     
-    return output.sort((a, b) => a.value - b.value);
+    return validated.sort((a, b) => a.value - b.value);
+  } catch (error) {
+    console.error('Error generating questions:', error);
+    throw new Error(`Failed to generate questions: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-);
+}
