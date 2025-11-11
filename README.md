@@ -45,7 +45,38 @@ GOOGLE_GENAI_API_KEY=your_api_key_here
 npm run dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000)
+5. Open [http://localhost:9002](http://localhost:9002)
+
+## Deploy to Netlify
+
+### Quick Deploy
+
+1. Push your code to GitHub
+2. Go to [Netlify](https://app.netlify.com)
+3. Click "Add new site" → "Import an existing project"
+4. Connect to GitHub and select your repository
+5. Configure build settings:
+   - **Build command**: `npm run build`
+   - **Publish directory**: `.next`
+6. Add environment variable:
+   - **Key**: `GOOGLE_GENAI_API_KEY`
+   - **Value**: Your Google AI API key
+7. Click "Deploy site"
+
+### Manual Deploy
+
+```bash
+# Install Netlify CLI
+npm install -g netlify-cli
+
+# Login to Netlify
+netlify login
+
+# Deploy
+netlify deploy --prod
+```
+
+**Note**: Make sure to set your `GOOGLE_GENAI_API_KEY` environment variable in Netlify's site settings before deploying.
 
 ## How to Play
 
