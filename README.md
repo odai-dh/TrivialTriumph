@@ -5,7 +5,7 @@ An interactive Jeopardy-style trivia game powered by AI question generation.
 ## Features
 
 - 🎮 **Multiple Players** - Support for up to 8 players
-- 🤖 **AI-Generated Questions** - Uses Google's Gemini AI to create unique trivia
+- 🤖 **AI-Generated Questions** - Uses Hugging Face AI to create unique trivia
 - 🎨 **Modern UI** - Beautiful, animated interface with dark mode support
 - 💾 **Auto-Save** - Game state persists in localStorage
 - 📱 **Responsive** - Works on desktop, tablet, and mobile
@@ -13,7 +13,7 @@ An interactive Jeopardy-style trivia game powered by AI question generation.
 ## Tech Stack
 
 - **Framework:** Next.js 15 with React 19
-- **AI:** Firebase Genkit + Google Gemini 2.0 Flash
+- **AI:** Hugging Face Inference API + Qwen2.5-72B-Instruct model
 - **Styling:** Tailwind CSS + shadcn/ui components
 - **Language:** TypeScript
 
@@ -35,9 +35,9 @@ npm install
 cp .env.example .env.local
 ```
 
-Add your Google AI API key to `.env.local`:
+Add your Hugging Face API key to `.env.local`:
 ```
-GOOGLE_GENAI_API_KEY=your_api_key_here
+HUGGINGFACE_API_KEY=your_huggingface_api_key_here
 ```
 
 4. Run the development server:
@@ -59,8 +59,8 @@ npm run dev
    - **Build command**: `npm run build`
    - **Publish directory**: `.next`
 6. Add environment variable:
-   - **Key**: `GOOGLE_GENAI_API_KEY`
-   - **Value**: Your Google AI API key
+   - **Key**: `HUGGINGFACE_API_KEY`
+   - **Value**: Your Hugging Face API key
 7. Click "Deploy site"
 
 ### Manual Deploy
@@ -76,7 +76,7 @@ netlify login
 netlify deploy --prod
 ```
 
-**Note**: Make sure to set your `GOOGLE_GENAI_API_KEY` environment variable in Netlify's site settings before deploying.
+**Note**: Make sure to set your `HUGGINGFACE_API_KEY` environment variable in Netlify's site settings before deploying.
 
 ## How to Play
 
